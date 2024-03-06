@@ -1,0 +1,27 @@
+services:
+  app:
+    container_name: meep-shop
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+  postgres:
+    container_name: pg-database
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: bank
+
+networks:
+  app-network:
+    driver: bridge
