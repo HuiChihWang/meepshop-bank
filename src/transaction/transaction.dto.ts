@@ -1,7 +1,8 @@
+import { AccountResponse } from './account.dto';
+
 export class TransactionResponse {
-  amount: string;
-  fromAccount: string;
-  toAccount: string;
+  fromAccount?: AccountResponse;
+  toAccount?: AccountResponse;
 }
 
 export class DepositRequest {

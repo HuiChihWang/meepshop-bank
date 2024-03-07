@@ -18,6 +18,7 @@ import { DBConfigService } from './config/db-config.service';
         database: dbConfig.getDBName(),
         // TODO: remove this from production
         synchronize: true,
+        autoLoadEntities: true,
       }),
     }),
     TransactionModule,
