@@ -6,10 +6,11 @@ import { AccountService } from './account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from './account.entity';
 import { Transaction } from './transaction.entity';
+import { SqlTransactionUtil } from './sql-transaction.util';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account, Transaction])],
-  providers: [TransactionService, AccountService],
+  providers: [TransactionService, AccountService, SqlTransactionUtil],
   controllers: [TransactionController, AccountController],
 })
 export class TransactionModule {}

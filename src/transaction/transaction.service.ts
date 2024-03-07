@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { Transaction, TransactionType } from './transaction.entity';
 import { Account } from './account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { SqlTransactionUtil } from './sql-transaction.util';
+import { Repository } from 'typeorm';
 
-// TODO: support atomic transaction
 @Injectable()
 export class TransactionService {
   constructor(
@@ -12,7 +12,9 @@ export class TransactionService {
     private readonly accountRepo: Repository<Account>,
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
+    private readonly transactionHelper: SqlTransactionUtil,
   ) {}
+
   async deposit(accountId: string, amount: number) {
     const account = await this.accountRepo.findOneByOrFail({
       id: accountId,
@@ -26,15 +28,16 @@ export class TransactionService {
 
     account.balance += amount;
 
-    try {
-      await this.accountRepo.save(account);
-      await this.transactionRepo.save(transaction);
-    } catch (error) {
-      // rollback transaction
-      // throw error
-    } finally {
-      // release transaction
-    }
+    let savedTransaction: Transaction;
+    await this.transactionHelper.runWithTransaction(async (manager) => {
+      await manager.save<Account>(account);
+      savedTransaction = await manager.save<Transaction>(transaction);
+    });
+
+    return {
+      transaction: savedTransaction,
+      toAccountBalance: account.balance,
+    };
   }
 
   async withdraw(accountId: string, amount: number) {
@@ -54,15 +57,16 @@ export class TransactionService {
 
     account.balance -= amount;
 
-    try {
-      await this.accountRepo.save(account);
-      await this.transactionRepo.save(transaction);
-    } catch (error) {
-      // rollback transaction
-      // throw error
-    } finally {
-      // release transaction
-    }
+    let savedTransaction: Transaction;
+    await this.transactionHelper.runWithTransaction(async (manager) => {
+      await manager.save<Account>(account);
+      savedTransaction = await manager.save<Transaction>(transaction);
+    });
+
+    return {
+      transaction: savedTransaction,
+      fromAccountBalance: account.balance,
+    };
   }
 
   async transfer(fromAccountId: string, toAccountId: string, amount: number) {
@@ -89,15 +93,17 @@ export class TransactionService {
     fromAccount.balance -= amount;
     toAccount.balance += amount;
 
-    try {
-      await this.accountRepo.save(fromAccount);
-      await this.accountRepo.save(toAccount);
-      await this.transactionRepo.save(transaction);
-    } catch (error) {
-      // rollback transaction
-      // throw error
-    } finally {
-      // release transaction
-    }
+    let savedTransaction: Transaction;
+    await this.transactionHelper.runWithTransaction(async (manager) => {
+      await manager.save<Account>(fromAccount);
+      await manager.save<Account>(toAccount);
+      savedTransaction = await manager.save<Transaction>(transaction);
+    });
+
+    return {
+      transaction: savedTransaction,
+      fromAccountBalance: fromAccount.balance,
+      toAccountBalance: toAccount.balance,
+    };
   }
 }
