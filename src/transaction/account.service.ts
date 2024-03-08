@@ -11,15 +11,22 @@ export class AccountService {
   ) {}
 
   async getAccount(accountId: string) {
-    return this.accountRepo.findOneBy({
+    return this.accountRepo.findOneByOrFail({
       id: accountId,
     });
   }
 
   async createAccount(user: string) {
+    const isUsernameExist = await this.accountRepo.exists({
+      where: { name: user },
+    });
+
+    if (isUsernameExist) {
+      throw new Error(`Username ${user} already exists`);
+    }
+
     const newAccount = this.accountRepo.create({
       name: user,
-      balance: 0,
     });
 
     return this.accountRepo.save(newAccount);
