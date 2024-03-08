@@ -18,7 +18,7 @@ export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'enum', enum: TransactionType })
+  @Column({ type: 'text', enum: TransactionType })
   type: TransactionType;
 
   @ManyToOne(() => Account)
@@ -31,7 +31,7 @@ export class Transaction {
   amount: number;
 
   @CreateDateColumn({
-    type: 'timestamp',
+    type: 'datetime',
   })
   createdAt: Date;
 }
