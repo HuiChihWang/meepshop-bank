@@ -16,6 +16,10 @@ export class TransactionService {
   ) {}
 
   async deposit(accountId: string, amount: number) {
+    if (amount < 0) {
+      throw new Error('amount should be positive');
+    }
+
     const account = await this.accountRepo.findOneByOrFail({
       id: accountId,
     });
@@ -41,6 +45,10 @@ export class TransactionService {
   }
 
   async withdraw(accountId: string, amount: number) {
+    if (amount < 0) {
+      throw new Error('amount should be positive');
+    }
+
     const account = await this.accountRepo.findOneByOrFail({
       id: accountId,
     });
@@ -70,6 +78,10 @@ export class TransactionService {
   }
 
   async transfer(fromAccountId: string, toAccountId: string, amount: number) {
+    if (amount < 0) {
+      throw new Error('amount should be positive');
+    }
+
     const fromAccount = await this.accountRepo.findOneByOrFail({
       id: fromAccountId,
     });

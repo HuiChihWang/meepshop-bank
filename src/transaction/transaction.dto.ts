@@ -20,7 +20,3 @@ export class TransferRequest {
   toAccount: string;
   amount: number;
 }
-
-export class TransferResponse {
-  transactionId: string;
-}

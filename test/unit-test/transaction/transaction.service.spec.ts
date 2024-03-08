@@ -93,6 +93,18 @@ describe('TransactionService', () => {
         toAccountBalance: 150,
       });
     });
+
+    it('should throw error when amount is negative', async () => {
+      const depositAmount = -100;
+      const account = {
+        id: 'accountId',
+        balance: 50,
+      } as Account;
+
+      await expect(
+        service.deposit(account.id, depositAmount),
+      ).rejects.toThrowError();
+    });
   });
   describe('withdraw', () => {
     it('should withdraw amount from account', async () => {
@@ -148,6 +160,18 @@ describe('TransactionService', () => {
       } as Account;
 
       jest.spyOn(accountRepoMock, 'findOneByOrFail').mockResolvedValue(account);
+
+      await expect(
+        service.withdraw(account.id, withdrawAmount),
+      ).rejects.toThrowError();
+    });
+
+    it('should throw error when amount is negative', async () => {
+      const withdrawAmount = -100;
+      const account = {
+        id: 'accountId',
+        balance: 50,
+      } as Account;
 
       await expect(
         service.withdraw(account.id, withdrawAmount),
@@ -233,5 +257,21 @@ describe('TransactionService', () => {
         service.transfer(fromAccount.id, toAccount.id, 100),
       ).rejects.toThrowError();
     });
+  });
+
+  it('should throw error when amount is negative', async () => {
+    const fromAccount = {
+      id: 'fromAccountId',
+      balance: 50,
+    } as Account;
+
+    const toAccount = {
+      id: 'toAccountId',
+      balance: 100,
+    } as Account;
+
+    await expect(
+      service.transfer(fromAccount.id, toAccount.id, -100),
+    ).rejects.toThrowError();
   });
 });
