@@ -5,19 +5,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SqlTransactionUtil } from './sql-transaction.util';
 import { Repository } from 'typeorm';
 import {
-  AccountNotFoundError,
   InsufficientBalanceError,
   InvalidAmountError,
 } from './transaction.error';
+import { AccountService } from './account.service';
 
 @Injectable()
 export class TransactionService {
   constructor(
-    @InjectRepository(Account)
-    private readonly accountRepo: Repository<Account>,
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
     private readonly transactionHelper: SqlTransactionUtil,
+    private readonly accountService: AccountService,
   ) {}
 
   async deposit(accountId: string, amount: number) {
@@ -25,9 +24,7 @@ export class TransactionService {
       throw new InvalidAmountError();
     }
 
-    const account = await this.accountRepo.findOneByOrFail({
-      id: accountId,
-    });
+    const account = await this.accountService.getAccount(accountId);
 
     const transaction = this.transactionRepo.create({
       toAccount: account,
@@ -54,14 +51,7 @@ export class TransactionService {
       throw new InvalidAmountError();
     }
 
-    let account: Account;
-    try {
-      account = await this.accountRepo.findOneByOrFail({
-        id: accountId,
-      });
-    } catch (error) {
-      throw new AccountNotFoundError(accountId);
-    }
+    const account = await this.accountService.getAccount(accountId);
 
     if (account.balance < amount) {
       throw new InsufficientBalanceError(accountId);
@@ -92,23 +82,8 @@ export class TransactionService {
       throw new InvalidAmountError();
     }
 
-    let fromAccount: Account;
-    try {
-      fromAccount = await this.accountRepo.findOneByOrFail({
-        id: fromAccountId,
-      });
-    } catch (error) {
-      throw new AccountNotFoundError(fromAccountId);
-    }
-
-    let toAccount: Account;
-    try {
-      toAccount = await this.accountRepo.findOneByOrFail({
-        id: toAccountId,
-      });
-    } catch (error) {
-      throw new AccountNotFoundError(toAccountId);
-    }
+    const fromAccount = await this.accountService.getAccount(fromAccountId);
+    const toAccount = await this.accountService.getAccount(toAccountId);
 
     if (fromAccount.balance < amount) {
       throw new InsufficientBalanceError(fromAccountId);

@@ -9,18 +9,15 @@ import {
   InsufficientBalanceError,
   InvalidAmountError,
 } from '../../../src/transaction/transaction.error';
+import { AccountService } from '../../../src/transaction/account.service';
 
 describe('TransactionService', () => {
   let service: TransactionService;
-  let accountRepoMock: Partial<Repository<Account>>;
+  let accountService: Partial<AccountService>;
   let transactionRepoMock: Partial<Repository<Transaction>>;
   let transactionUtilMock: Partial<SqlTransactionUtil>;
 
   beforeEach(async () => {
-    accountRepoMock = {
-      findOneByOrFail: jest.fn(),
-      create: jest.fn(),
-    };
     transactionRepoMock = {
       create: jest.fn(),
     };
@@ -29,12 +26,16 @@ describe('TransactionService', () => {
       runWithTransaction: jest.fn(),
     };
 
+    accountService = {
+      getAccount: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TransactionService,
         {
-          provide: getRepositoryToken(Account),
-          useValue: accountRepoMock,
+          provide: AccountService,
+          useValue: accountService,
         },
         {
           provide: getRepositoryToken(Transaction),
@@ -77,7 +78,7 @@ describe('TransactionService', () => {
         type: 'DEPOSIT',
       };
 
-      jest.spyOn(accountRepoMock, 'findOneByOrFail').mockResolvedValue(account);
+      jest.spyOn(accountService, 'getAccount').mockResolvedValue(account);
       jest.spyOn(transactionRepoMock, 'create').mockReturnValue(transaction);
 
       const entityManagerMock = {
@@ -133,7 +134,7 @@ describe('TransactionService', () => {
         type: 'WITHDRAW',
       };
 
-      jest.spyOn(accountRepoMock, 'findOneByOrFail').mockResolvedValue(account);
+      jest.spyOn(accountService, 'getAccount').mockResolvedValue(account);
       jest.spyOn(transactionRepoMock, 'create').mockReturnValue(transaction);
 
       const entityManagerMock = {
@@ -163,7 +164,7 @@ describe('TransactionService', () => {
         balance: 50,
       } as Account;
 
-      jest.spyOn(accountRepoMock, 'findOneByOrFail').mockResolvedValue(account);
+      jest.spyOn(accountService, 'getAccount').mockResolvedValue(account);
 
       await expect(
         service.withdraw(account.id, withdrawAmount),
@@ -215,7 +216,7 @@ describe('TransactionService', () => {
       };
 
       jest
-        .spyOn(accountRepoMock, 'findOneByOrFail')
+        .spyOn(accountService, 'getAccount')
         .mockResolvedValueOnce(fromAccount)
         .mockResolvedValueOnce(toAccount);
       jest.spyOn(transactionRepoMock, 'create').mockReturnValue(transaction);
@@ -253,9 +254,7 @@ describe('TransactionService', () => {
         balance: 100,
       } as Account;
 
-      jest
-        .spyOn(accountRepoMock, 'findOneByOrFail')
-        .mockResolvedValue(fromAccount);
+      jest.spyOn(accountService, 'getAccount').mockResolvedValue(fromAccount);
 
       await expect(
         service.transfer(fromAccount.id, toAccount.id, 100),
