@@ -1,26 +1,16 @@
-# Use the official Node.js 14 image
-FROM node:18
+FROM node:18-alpine
 
-# Set working directory inside the container
-WORKDIR /usr/src/app
+RUN npm install -g @nestjs/cli
 
-# Copy package.json and pnpm-lock.yaml to the working directory
-COPY package.json pnpm-lock.yaml ./
-
-# Install pnpm globally
 RUN npm install -g pnpm
 
-# Install project dependencies
-RUN pnpm install
-
-# Copy the rest of the application code to the working directory
+WORKDIR /app
 COPY . .
 
-# Build the TypeScript code
+RUN pnpm install
+
 RUN pnpm run build
 
-# Expose the port the app runs on
-EXPOSE 3000
+CMD [ "npm", "run", "start:prod" ]
 
-# Command to run your application
-CMD ["pnpm", "start:prod"]
+EXPOSE 3000

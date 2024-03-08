@@ -18,12 +18,12 @@ export class Account {
   balance: number;
 
   @CreateDateColumn({
-    type: 'datetime',
+    type: process?.env?.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    type: 'datetime',
+    type: process?.env?.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
   })
   updatedAt: Date;
 }

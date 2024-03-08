@@ -31,7 +31,7 @@ export class Transaction {
   amount: number;
 
   @CreateDateColumn({
-    type: 'datetime',
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
   })
   createdAt: Date;
 }

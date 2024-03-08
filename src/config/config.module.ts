@@ -7,7 +7,7 @@ import { AppConfigService } from './app-config.service';
 @Module({
   imports: [
     NestConfigModule.forRoot({
-      envFilePath: [`./config/.env.development`],
+      envFilePath: [`./config/.env`],
     }),
   ],
   providers: [DBConfigService, AppConfigService],
