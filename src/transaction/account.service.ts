@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Account } from './account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  AccountAlreadyExistsError,
+  AccountNotFoundError,
+} from './transaction.error';
 
 @Injectable()
 export class AccountService {
@@ -11,9 +15,13 @@ export class AccountService {
   ) {}
 
   async getAccount(accountId: string) {
-    return this.accountRepo.findOneByOrFail({
-      id: accountId,
-    });
+    try {
+      return await this.accountRepo.findOneByOrFail({
+        id: accountId,
+      });
+    } catch (error) {
+      throw new AccountNotFoundError(accountId);
+    }
   }
 
   async createAccount(user: string) {
@@ -22,7 +30,7 @@ export class AccountService {
     });
 
     if (isUsernameExist) {
-      throw new Error(`Username ${user} already exists`);
+      throw new AccountAlreadyExistsError(user);
     }
 
     const newAccount = this.accountRepo.create({

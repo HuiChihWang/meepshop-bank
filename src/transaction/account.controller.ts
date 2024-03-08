@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { AccountResponse, CreateAccountRequest } from './account.dto';
 import { AccountService } from './account.service';
 
@@ -7,6 +15,7 @@ export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createAccount(
     @Body() request: CreateAccountRequest,
   ): Promise<AccountResponse> {

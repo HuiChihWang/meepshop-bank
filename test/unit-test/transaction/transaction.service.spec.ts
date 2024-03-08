@@ -5,6 +5,10 @@ import { Account } from '../../../src/transaction/account.entity';
 import { Transaction } from '../../../src/transaction/transaction.entity';
 import { SqlTransactionUtil } from '../../../src/transaction/sql-transaction.util';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  InsufficientBalanceError,
+  InvalidAmountError,
+} from '../../../src/transaction/transaction.error';
 
 describe('TransactionService', () => {
   let service: TransactionService;
@@ -103,7 +107,7 @@ describe('TransactionService', () => {
 
       await expect(
         service.deposit(account.id, depositAmount),
-      ).rejects.toThrowError();
+      ).rejects.toThrowError(InvalidAmountError);
     });
   });
   describe('withdraw', () => {
@@ -163,7 +167,7 @@ describe('TransactionService', () => {
 
       await expect(
         service.withdraw(account.id, withdrawAmount),
-      ).rejects.toThrowError();
+      ).rejects.toThrowError(InsufficientBalanceError);
     });
 
     it('should throw error when amount is negative', async () => {
@@ -175,7 +179,7 @@ describe('TransactionService', () => {
 
       await expect(
         service.withdraw(account.id, withdrawAmount),
-      ).rejects.toThrowError();
+      ).rejects.toThrowError(InvalidAmountError);
     });
   });
   describe('transfer', () => {
@@ -255,7 +259,7 @@ describe('TransactionService', () => {
 
       await expect(
         service.transfer(fromAccount.id, toAccount.id, 100),
-      ).rejects.toThrowError();
+      ).rejects.toThrowError(InsufficientBalanceError);
     });
   });
 
@@ -272,6 +276,6 @@ describe('TransactionService', () => {
 
     await expect(
       service.transfer(fromAccount.id, toAccount.id, -100),
-    ).rejects.toThrowError();
+    ).rejects.toThrowError(InvalidAmountError);
   });
 });

@@ -4,6 +4,11 @@ import { Account } from './account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SqlTransactionUtil } from './sql-transaction.util';
 import { Repository } from 'typeorm';
+import {
+  AccountNotFoundError,
+  InsufficientBalanceError,
+  InvalidAmountError,
+} from './transaction.error';
 
 @Injectable()
 export class TransactionService {
@@ -17,7 +22,7 @@ export class TransactionService {
 
   async deposit(accountId: string, amount: number) {
     if (amount < 0) {
-      throw new Error('amount should be positive');
+      throw new InvalidAmountError();
     }
 
     const account = await this.accountRepo.findOneByOrFail({
@@ -46,15 +51,20 @@ export class TransactionService {
 
   async withdraw(accountId: string, amount: number) {
     if (amount < 0) {
-      throw new Error('amount should be positive');
+      throw new InvalidAmountError();
     }
 
-    const account = await this.accountRepo.findOneByOrFail({
-      id: accountId,
-    });
+    let account: Account;
+    try {
+      account = await this.accountRepo.findOneByOrFail({
+        id: accountId,
+      });
+    } catch (error) {
+      throw new AccountNotFoundError(accountId);
+    }
 
     if (account.balance < amount) {
-      throw new Error(`account ${accountId} doesn't have sufficient amount`);
+      throw new InsufficientBalanceError(accountId);
     }
 
     const transaction = this.transactionRepo.create({
@@ -79,20 +89,29 @@ export class TransactionService {
 
   async transfer(fromAccountId: string, toAccountId: string, amount: number) {
     if (amount < 0) {
-      throw new Error('amount should be positive');
+      throw new InvalidAmountError();
     }
 
-    const fromAccount = await this.accountRepo.findOneByOrFail({
-      id: fromAccountId,
-    });
-    const toAccount = await this.accountRepo.findOneByOrFail({
-      id: toAccountId,
-    });
+    let fromAccount: Account;
+    try {
+      fromAccount = await this.accountRepo.findOneByOrFail({
+        id: fromAccountId,
+      });
+    } catch (error) {
+      throw new AccountNotFoundError(fromAccountId);
+    }
+
+    let toAccount: Account;
+    try {
+      toAccount = await this.accountRepo.findOneByOrFail({
+        id: toAccountId,
+      });
+    } catch (error) {
+      throw new AccountNotFoundError(toAccountId);
+    }
 
     if (fromAccount.balance < amount) {
-      throw new Error(
-        `account ${fromAccountId} doesn't have sufficient amount`,
-      );
+      throw new InsufficientBalanceError(fromAccountId);
     }
 
     const transaction = this.transactionRepo.create({

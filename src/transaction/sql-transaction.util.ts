@@ -1,5 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
+
+class DBTransactionError extends HttpException {
+  constructor() {
+    super('Transaction fail', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
 
 @Injectable()
 export class SqlTransactionUtil {
@@ -15,7 +21,7 @@ export class SqlTransactionUtil {
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new Error('Transaction Fail!');
+      throw new DBTransactionError();
     } finally {
       await queryRunner.release();
     }

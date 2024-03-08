@@ -3,6 +3,10 @@ import { AccountService } from '../../../src/transaction/account.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Account } from '../../../src/transaction/account.entity';
 import { Repository } from 'typeorm';
+import {
+  AccountAlreadyExistsError,
+  AccountNotFoundError,
+} from '../../../src/transaction/transaction.error';
 
 describe('AccountService', () => {
   let service: AccountService;
@@ -57,7 +61,9 @@ describe('AccountService', () => {
 
     it('should throw error when name is existed', async () => {
       jest.spyOn(accountRepositoryMock, 'exists').mockResolvedValue(true);
-      await expect(service.createAccount('user')).rejects.toThrowError();
+      await expect(service.createAccount('user')).rejects.toThrowError(
+        AccountAlreadyExistsError,
+      );
     });
 
     describe('getAccount', () => {
@@ -82,7 +88,9 @@ describe('AccountService', () => {
         jest
           .spyOn(accountRepositoryMock, 'findOneByOrFail')
           .mockRejectedValue(new Error(`Account ${testId} not found`));
-        await expect(service.getAccount(testId)).rejects.toThrowError();
+        await expect(service.getAccount(testId)).rejects.toThrowError(
+          AccountNotFoundError,
+        );
       });
     });
   });
